@@ -1,0 +1,38 @@
+import cv2
+import numpy as np
+
+cap=cv2.VideoCapture(0)
+sift=cv2.SIFT()
+
+
+if not cap.isOpened():
+    raise IOError('gad l frin') 
+c1=''
+while True:
+    suc,frame=cap.read()
+    frame=cv2.resize(frame,None,None,0.9,0.9,cv2.INTER_AREA)
+    gray1=cv2.cvtColor(frame,cv2.COLOR_BGR2GRAY)
+    gray=np.float32(gray1)
+    if c1==ord('h'):
+        des=cv2.cornerHarris(gray, 4, 5, 0.04)
+        des=cv2.dilate(des,None)
+        frame[des>0.01*des.max()]=0
+    if c1==ord('t'):
+        des=cv2.goodFeaturesToTrack(gray1, 20, 0.05, 25)
+        #des=np.float32(des)
+        for item in des:
+            x,y=item[0]
+            cv2.circle(frame, (int(x),int(y)), 5, 255, -1)
+    if c1==ord('s'):
+        keypoint=sift.detect(gray1,None)
+        frame=cv2.drawKeypoints(frame, keypoint,flags=cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
+    
+    cv2.imshow('video',frame)
+    c=cv2.waitKey(1)
+    
+    if c==ord('h') or c==ord('t') or c==ord('s'):
+        c1=c
+    if c==ord('c'):
+        break
+cap.release()
+cv2.destroyAllWindows()
